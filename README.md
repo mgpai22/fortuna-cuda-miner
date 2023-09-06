@@ -60,31 +60,60 @@ After everything is setup, you can run the miner with the following command:
 deno task cli mine
 ```
 
+### Rust Miner
+
+- works on windows
+- works on linux
+
+You can check releases for pre-built binaries/exes but its always best for you to build on your own
+
+CUDA requried to be installed before building. 
+
+Make sure server/stratum is working. This must be already running.
+
+
 Run server/stratum with
 ```sh
 deno run --allow-all miner/server.ts "mine"
 ```
 
-### Rust Miner
-
-Build binary, run this in rust-miner directory 
+binary/executable must be built 
 
 To build you need you need to install:
+
+- [rust](https://www.rust-lang.org/tools/install)
+
+These libraries below for linux (instructions are for ubunutu) 
 ```shell
 sudo apt-get install pkg-config libssl-dev
 ```
 ```shell
 sudo apt-get install build-essential
 ```
+
+Go into tuna_cuda_miner directory with
+```shell
+cd tuna_cuda_miner
+```
 ```shell
 cargo build --release
 ```
 binary will be in `/target/release`
+```shell
+cd /target/release
+```
 
 Run with 
 ```shell
 ./tuna_cuda_miner <deno server link>
 ```
+
+Server does not need to be local, it can be remote as such
+```shell
+./tuna_cuda_miner https://my-aws-server.com
+```
+
+If no server is specified it will be `http://localhost:8008` by default
 
 Note: this is a very quick implementation of a CUDA miner. Code is poor quality and could be unstable. 
 
