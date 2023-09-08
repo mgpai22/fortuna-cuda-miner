@@ -43,7 +43,7 @@ fn main() -> Result<(), rustacuda::error::CudaError> {
     thread::spawn(move || {
         loop {
             // checks for json update every second
-            std::thread::sleep(std::time::Duration::from_millis(1000));
+            std::thread::sleep(std::time::Duration::from_millis(10000));
             let new_json = fetch_url(&server_url_clone).unwrap().clone();
             let mut json = json_arc_clone.lock().unwrap();
             if new_json != *json {
