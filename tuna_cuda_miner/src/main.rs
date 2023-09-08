@@ -12,7 +12,7 @@ use rand::RngCore;
 use reqwest::{self, Error};
 use arrayref::array_ref;
 
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::process::exit;
@@ -253,19 +253,32 @@ fn extract_fields(input: &str) -> Vec<FieldValue> {
 }
 
 fn fetch_url(url: &str) -> Result<String, Error> {
-    match reqwest::blocking::get(url) {
-        Ok(response) => Ok(response.text()?),
-        Err(_err) => {
-            eprintln!("Server failed to connect");
-            exit(0);
+    for _attempt in 1..=10 {
+        match reqwest::blocking::get(url) {
+            Ok(response) => return Ok(response.text()?),
+            Err(_err) => {
+                eprintln!("Attempt {} failed to connect, retrying in 2 seconds...", _attempt);
+                thread::sleep(Duration::from_secs(2));
+            }
         }
     }
+    eprintln!("Failed to connect after 10 attempts");
+    exit(0);
 }
+
 fn post_answer(url: &str, answer: &FoundAnswerResponse) -> Result<(), Error> {
     let client = reqwest::blocking::Client::new();
-    client.post(url)
-        .json(answer)
-        .send()?;
 
-    Ok(())
+    for attempt in 1..=10 {
+        match client.post(url).json(answer).send() {
+            Ok(_response) => return Ok(()),
+            Err(_err) => {
+                eprintln!("Attempt {} failed to send, retrying in 2 seconds...", attempt);
+                thread::sleep(Duration::from_secs(2));
+            }
+        }
+    }
+
+    eprintln!("Failed to send after 10 attempts");
+    exit(0);
 }
